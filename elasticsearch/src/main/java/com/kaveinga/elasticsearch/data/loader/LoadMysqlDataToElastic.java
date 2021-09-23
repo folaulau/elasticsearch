@@ -1,8 +1,5 @@
 package com.kaveinga.elasticsearch.data.loader;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,16 +9,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.kaveinga.elasticsearch.dao.CardRepository;
 import com.kaveinga.elasticsearch.dao.ElasticsearchDAO;
-import com.kaveinga.elasticsearch.dao.SwipeRepository;
 import com.kaveinga.elasticsearch.dao.UserDAO;
-import com.kaveinga.elasticsearch.dao.UserRepository;
-import com.kaveinga.elasticsearch.dto.RowDTO;
-import com.kaveinga.elasticsearch.dto.UserIndex;
 import com.kaveinga.elasticsearch.entity.User;
+import com.kaveinga.elasticsearch.mapping.ElasticMappingService;
 import com.kaveinga.elasticsearch.utils.ObjectUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,42 +22,50 @@ import lombok.extern.slf4j.Slf4j;
 public class LoadMysqlDataToElastic implements CommandLineRunner {
 
     @Autowired
-    private UserDAO          userDAO;
+    private UserDAO               userDAO;
 
     @Autowired
-    private ElasticsearchDAO elasticsearchDAO;
+    private ElasticsearchDAO      elasticsearchDAO;
+
+    @Autowired
+    private ElasticMappingService elasticMappingService;
 
     @Override
     public void run(String... args) throws Exception {
 
-        int start = 1;
-        int end = 10;
+        
+        elasticMappingService.setupMapping();
+        
+        int pageNumber = 0;
+        int pageSize = 25;
 
-        List<RowDTO> rows = userDAO.get(start, end);
-        List<RowDTO> newRows = new ArrayList<>();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<User> userPage = null;
 
-        for (RowDTO row : rows) {
-            log.info(row.toString());
-//            RowDTO newRow = new RowDTO();
-//            newRow.setUserId(row.getUserId());
+        while (true) {
+            userPage = userDAO.get(pageable);
 
-            String jsonString = row.getJsonData();//.replace("\\", "xxx");
-            log.info("jsonString={}", ObjectUtils.toJson(jsonString));
-//            UserIndex userIndex = ObjectUtils.getObjectMapper().readValue(jsonString, UserIndex.class);
-//            log.info("userIndex={}", ObjectUtils.toJson(userIndex));
-//            newRow.setJsonData(ObjectUtils.toJson(userIndex));
-//            newRows.add(newRow);
+            if (userPage.hasContent()) {
 
+                List<User> users = userPage.getContent();
+
+                log.info("users={}", ObjectUtils.toJson(users));
+
+                elasticsearchDAO.insertUsers(users);
+
+                if (!userPage.hasNext()) {
+                    break;
+                }
+
+                pageNumber++;
+                pageable = PageRequest.of(pageNumber, pageSize);
+
+            } else {
+                break;
+            }
         }
 
-        //elasticsearchDAO.insert(newRows);
-        
-        elasticsearchDAO.insert(rows);
+        log.info("done loading data to ES!");
 
-//        Pageable pageable = PageRequest.of(start, end);
-//
-//        Page<User> users = userRepository.findAll(pageable);
-//        
-//        log.info("users={}",ObjectUtils.toJson(users));
     }
 }

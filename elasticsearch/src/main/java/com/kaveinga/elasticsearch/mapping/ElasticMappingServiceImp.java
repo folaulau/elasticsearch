@@ -79,196 +79,66 @@ public class ElasticMappingServiceImp implements ElasticMappingService {
             {
                 builder.startObject("properties");
                 {
-                    builder.startObject("PropertyType");
+                    
+                    builder.startObject("dateOfBirth");
                     {
-                        builder.field("type", "keyword");
+                        builder.field("type", "date");
+                        builder.field("format", "yyyy-MM-dd");
                     }
                     builder.endObject();
-
-                    builder.startObject("PropertySubType");
-                    {
-                        builder.field("type", "keyword");
-                    }
-                    builder.endObject();
-
+                    
                     builder.startObject("location");
                     {
                         builder.field("type", "geo_point");
                     }
                     builder.endObject();
 
-                    builder.startObject("appraisals");
+                    /**
+                     * nested object cards
+                     */
+                    builder.startObject("cards");
                     {
                         builder.field("type", "nested");
                         
                         builder.startObject("properties");
                         {
-                            builder.startObject("DateDue");
+                            builder.startObject("expirationDate");
                             {
                                 builder.field("type", "date");
                                 builder.field("format", "yyyy-MM-dd");
                             }
                             builder.endObject();
                             
-                            builder.startObject("DateBooked");
+                            builder.startObject("activatedDate");
                             {
                                 builder.field("type", "date");
                                 builder.field("format", "yyyy-MM-dd");
                             }
                             builder.endObject();
                             
-                            builder.startObject("ReportDate");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-
-                    builder.startObject("expenses");
-                    {
-                        builder.field("type", "nested");
-                        
-                        builder.startObject("properties");
-                        {
-                            builder.startObject("IEPeriodEnd");
+                            builder.startObject("deactivatedDate");
                             {
                                 builder.field("type", "date");
                                 builder.field("format", "yyyy-MM-dd");
                             }
                             builder.endObject();
                             
-                            builder.startObject("ExpenseDateTimeCreated");
+                            /**
+                             * nested object swipe
+                             */
+                            builder.startObject("swipes");
                             {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-
-                    builder.startObject("leases");
-                    {
-                        builder.field("type", "nested");
-                        
-                        builder.startObject("properties");
-                        {
-                            builder.startObject("SaleDateTimeCreated");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                            
-                            builder.startObject("ContractDate");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-
-                    builder.startObject("sales");
-                    {
-                        builder.field("type", "nested");
-                        
-                        builder.startObject("properties");
-                        {
-                            builder.startObject("SurveyDate");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                            
-                            builder.startObject("LeaseDateTimeCreated");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                            
-                            builder.startObject("LeaseCommenceMYr");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-
-                    builder.startObject("costs");
-                    {
-                        builder.field("type", "nested");
-                        
-                        builder.startObject("properties");
-                        {
-                            builder.startObject("CostDateTimeCreated");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                            
-                            builder.startObject("CostEffectiveDate");
-                            {
-                                builder.field("type", "date");
-                                builder.field("format", "yyyy-MM-dd");
-                            }
-                            builder.endObject();
-                            
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-                    
-                    builder.startObject("photos");
-                    {
-                        builder.field("type", "nested");
-                    }
-                    builder.endObject();
-
-                    builder.startObject("EntryDate");
-                    {
-                        builder.field("type", "date");
-                        builder.field("format", "yyyy-MM-dd HH:mm:ss");
-                    }
-                    builder.endObject();
-
-                    builder.startObject("CreatedOn");
-                    {
-                        builder.field("type", "date");
-                        builder.field("format", "yyyy-MM-dd HH:mm:ss");
-                    }
-                    builder.endObject();
-
-                    builder.startObject("GBA");
-                    {
-                        builder.field("type", "long");
-                    }
-                    builder.endObject();
-                    
-                    builder.startObject("PropertyName");
-                    {
-                        builder.field("type", "text");
-                        builder.field("analyzer", caseInsensitiveAnalyzer);
-                        
-                        builder.startObject("fields");
-                        {
-                            builder.startObject("keyword");
-                            {
-                                builder.field("type", "keyword");
-                                builder.field("ignore_above", 256);
+                                builder.field("type", "nested");
+                                
+                                builder.startObject("properties");
+                                {
+                                    builder.startObject("createdAt");
+                                    {
+                                        builder.field("type", "date");
+                                    }
+                                    builder.endObject();
+                                }
+                                builder.endObject();
                             }
                             builder.endObject();
                         }
@@ -276,113 +146,6 @@ public class ElasticMappingServiceImp implements ElasticMappingService {
                     }
                     builder.endObject();
                     
-                    builder.startObject("Address");
-                    {
-                        builder.field("type", "text");
-                        builder.field("analyzer", caseInsensitiveAnalyzer);
-                        
-                        builder.startObject("fields");
-                        {
-                            builder.startObject("keyword");
-                            {
-                                builder.field("type", "keyword");
-                                builder.field("ignore_above", 256);
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-                    
-                    builder.startObject("County");
-                    {
-                        builder.field("type", "text");
-                        builder.field("analyzer", caseInsensitiveAnalyzer);
-                        
-                        builder.startObject("fields");
-                        {
-                            builder.startObject("keyword");
-                            {
-                                builder.field("type", "keyword");
-                                builder.field("ignore_above", 256);
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-                    
-                    builder.startObject("StateFullName");
-                    {
-                        builder.field("type", "text");
-                        builder.field("analyzer", caseInsensitiveAnalyzer);
-                        
-                        builder.startObject("fields");
-                        {
-                            builder.startObject("keyword");
-                            {
-                                builder.field("type", "keyword");
-                                builder.field("ignore_above", 256);
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-                    
-                    builder.startObject("StateAbbr");
-                    {
-                        builder.field("type", "text");
-                        builder.field("analyzer", caseInsensitiveAnalyzer);
-                        
-                        builder.startObject("fields");
-                        {
-                            builder.startObject("keyword");
-                            {
-                                builder.field("type", "keyword");
-                                builder.field("ignore_above", 256);
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-                    
-                    builder.startObject("StreetName");
-                    {
-                        builder.field("type", "text");
-                        builder.field("analyzer", caseInsensitiveAnalyzer);
-                        
-                        builder.startObject("fields");
-                        {
-                            builder.startObject("keyword");
-                            {
-                                builder.field("type", "keyword");
-                                builder.field("ignore_above", 256);
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
-                    
-                    builder.startObject("City");
-                    {
-                        builder.field("type", "text");
-                        builder.field("analyzer", caseInsensitiveAnalyzer);
-                        
-                        builder.startObject("fields");
-                        {
-                            builder.startObject("keyword");
-                            {
-                                builder.field("type", "keyword");
-                                builder.field("ignore_above", 256);
-                            }
-                            builder.endObject();
-                        }
-                        builder.endObject();
-                    }
-                    builder.endObject();
 
                 }
                 builder.endObject();

@@ -39,7 +39,7 @@ class UserSearchTests {
 
     @Test
     void searchExactUserFirstName() {
-        
+
         String firstName = "Ayla";
 
         int pageNumber = 0;
@@ -53,11 +53,11 @@ class UserSearchTests {
         searchSourceBuilder.from(pageNumber * pageSize);
         searchSourceBuilder.size(pageSize);
         searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-        
+
         /**
          * fetch only a few fields
          */
-        //searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
+        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
 
         /**
          * Query
@@ -65,14 +65,15 @@ class UserSearchTests {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         /**
-         * Filter
+         * Filter<br>
+         * term query looks for exact match. Use keyword
          */
         boolQueryBuilder.filter(QueryBuilders.termQuery("firstName.keyword", firstName));
 
         searchSourceBuilder.query(boolQueryBuilder);
 
         searchRequest.source(searchSourceBuilder);
-        
+
         if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
             log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
         } else {
@@ -85,8 +86,8 @@ class UserSearchTests {
             log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
 
             List<User> users = getResponseResult(searchResponse.getHits());
-            
-            log.info("results={}",ObjectUtils.toJson(users));
+
+            log.info("results={}", ObjectUtils.toJson(users));
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -94,10 +95,10 @@ class UserSearchTests {
         }
 
     }
-    
+
     @Test
     void searchContainUserFirstName() {
-        
+
         String firstName = "Ayla";
 
         int pageNumber = 0;
@@ -111,11 +112,11 @@ class UserSearchTests {
         searchSourceBuilder.from(pageNumber * pageSize);
         searchSourceBuilder.size(pageSize);
         searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-        
+
         /**
          * fetch only a few fields
          */
-        //searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
+        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
 
         /**
          * Query
@@ -130,7 +131,7 @@ class UserSearchTests {
         searchSourceBuilder.query(boolQueryBuilder);
 
         searchRequest.source(searchSourceBuilder);
-        
+
         if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
             log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
         } else {
@@ -143,8 +144,8 @@ class UserSearchTests {
             log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
 
             List<User> users = getResponseResult(searchResponse.getHits());
-            
-            log.info("results={}",ObjectUtils.toJson(users));
+
+            log.info("results={}", ObjectUtils.toJson(users));
 
         } catch (IOException e) {
             // TODO Auto-generated catch block

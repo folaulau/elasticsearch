@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -29,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootTest
-class UserSearchTests {
+class HowToSearchTests {
 
     @Value("${spring.datasource.name}")
     private String              database;
@@ -38,7 +39,7 @@ class UserSearchTests {
     private RestHighLevelClient restHighLevelClient;
 
     @Test
-    void searchExactUserFirstName() {
+    void searchWithTerm() {
 
         String firstName = "Ayla";
 
@@ -97,7 +98,7 @@ class UserSearchTests {
     }
 
     @Test
-    void searchContainUserFirstName() {
+    void searchWithMatch() {
 
         String firstName = "Ayla";
 
@@ -156,7 +157,7 @@ class UserSearchTests {
     }
 
     @Test
-    void searchWithPreference() {
+    void searchWithExtraRequestConfigs() {
 
         String firstName = "Ayla";
 
@@ -190,7 +191,23 @@ class UserSearchTests {
 
         searchSourceBuilder.query(boolQueryBuilder);
 
+        /**
+         * The timeout parameter tells the coordinating node how long it should wait before giving up and just returning
+         * the results that it already has. It can be better to return some results than none at all.
+         */
+        searchSourceBuilder.timeout(TimeValue.timeValueMinutes(2));
+        
+
         searchRequest.source(searchSourceBuilder);
+        
+        searchRequest.searchType(SearchType.DEFAULT);
+
+        /**
+         * preference parameter allows you to control which shards or nodes are used to handle the search request.<br>
+         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-shard-routing.html<br>
+         * 
+         */
+        searchRequest.preference("firstName");
 
         if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
             log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());

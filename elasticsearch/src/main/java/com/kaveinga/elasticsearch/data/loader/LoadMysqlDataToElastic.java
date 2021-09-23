@@ -37,7 +37,7 @@ public class LoadMysqlDataToElastic implements CommandLineRunner {
         elasticMappingService.setupMapping();
         
         int pageNumber = 0;
-        int pageSize = 25;
+        int pageSize = 10;
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<User> userPage = null;

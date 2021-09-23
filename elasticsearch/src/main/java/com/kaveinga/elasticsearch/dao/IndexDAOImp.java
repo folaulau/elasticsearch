@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Repository
-public class ElasticsearchDAOImp implements ElasticsearchDAO {
+public class IndexDAOImp implements IndexDAO {
 
     @Value("${spring.datasource.name}")
     private String              database;

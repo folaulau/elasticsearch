@@ -5,7 +5,7 @@ import java.util.List;
 import com.kaveinga.elasticsearch.dto.RowDTO;
 import com.kaveinga.elasticsearch.entity.User;
 
-public interface ElasticsearchDAO {
+public interface IndexDAO {
 
     void insert(List<RowDTO> rows);
     

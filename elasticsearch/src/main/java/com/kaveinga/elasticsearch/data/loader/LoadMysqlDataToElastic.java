@@ -9,7 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import com.kaveinga.elasticsearch.dao.ElasticsearchDAO;
+import com.kaveinga.elasticsearch.dao.IndexDAO;
 import com.kaveinga.elasticsearch.dao.UserDAO;
 import com.kaveinga.elasticsearch.entity.User;
 import com.kaveinga.elasticsearch.mapping.ElasticMappingService;
@@ -25,7 +25,7 @@ public class LoadMysqlDataToElastic implements CommandLineRunner {
     private UserDAO               userDAO;
 
     @Autowired
-    private ElasticsearchDAO      elasticsearchDAO;
+    private IndexDAO              indexDAO;
 
     @Autowired
     private ElasticMappingService elasticMappingService;
@@ -51,7 +51,7 @@ public class LoadMysqlDataToElastic implements CommandLineRunner {
 
                 log.info("users={}", ObjectUtils.toJson(users));
 
-                elasticsearchDAO.insertUsers(users);
+                indexDAO.insertUsers(users);
 
                 if (!userPage.hasNext()) {
                     break;

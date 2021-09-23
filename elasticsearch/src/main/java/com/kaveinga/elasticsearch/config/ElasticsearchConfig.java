@@ -7,6 +7,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
@@ -75,6 +76,9 @@ public class ElasticsearchConfig extends AbstractFactoryBean<RestHighLevelClient
         try {
 
             // @formatter:off
+            
+            final int numberOfThreads = 10;
+            final int connectionTimeoutTime = 60;
  
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(AuthScope.ANY, 
@@ -88,6 +92,13 @@ public class ElasticsearchConfig extends AbstractFactoryBean<RestHighLevelClient
             restClientBuilder.setHttpClientConfigCallback(new HttpClientConfigCallback() {
                 @Override
                 public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+                    
+                    httpClientBuilder = httpClientBuilder.setDefaultIOReactorConfig(
+                            IOReactorConfig.custom()
+                                .setIoThreadCount(numberOfThreads)
+                                .setConnectTimeout(connectionTimeoutTime)
+                                .build());
+                    
                     return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                 }
             });
@@ -101,6 +112,8 @@ public class ElasticsearchConfig extends AbstractFactoryBean<RestHighLevelClient
                 }
 
             });
+            
+            
             
             // @formatter:on
 

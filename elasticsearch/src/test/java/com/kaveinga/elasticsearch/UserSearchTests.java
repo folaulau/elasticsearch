@@ -124,7 +124,8 @@ class UserSearchTests {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         /**
-         * Filter
+         * Filter<br>
+         * match query is like contain in mysql
          */
         boolQueryBuilder.filter(QueryBuilders.matchQuery("firstName", firstName));
 

@@ -3,6 +3,7 @@ package com.kaveinga.elasticsearch.data.loader;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,15 +28,21 @@ public class LoadMysqlDataToElastic implements CommandLineRunner {
     @Autowired
     private IndexDAO              indexDAO;
 
+    @Value("${elasticsearch.reload-initial-data}")
+    private boolean               reloadInitialData;
+
     @Autowired
     private ElasticMappingService elasticMappingService;
 
     @Override
     public void run(String... args) throws Exception {
+        log.info("reloadInitialData={}", reloadInitialData);
+        if (!reloadInitialData) {
+            return;
+        }
 
-        
         elasticMappingService.setupMapping();
-        
+
         int pageNumber = 0;
         int pageSize = 10;
 

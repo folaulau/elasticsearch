@@ -12,4 +12,6 @@ public interface ElasticsearchDAO {
     void insertUsers(List<User> rows);
     
     void insert(RowDTO row);
+    
+    void insertUser(User row);
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -66,15 +67,32 @@ public class ElasticsearchDAOImp implements ElasticsearchDAO {
 
     @Override
     public void insert(RowDTO row) {
-        // TODO Auto-generated method stub
+        if (null == row) {
+            log.info("empty payload.");
+            return;
+        }
 
+        IndexRequest request = new IndexRequest(database.toLowerCase()).id(row.getUserId() + "").source(row.getJsonData(), XContentType.JSON);
+
+        try {
+            IndexResponse response = restHighLevelClient.index(request, RequestOptions.DEFAULT);
+
+            log.info("status={}", response.status().getStatus());
+
+            // for (BulkItemResponse item : Arrays.asList(response.getItems())) {
+            // log.info("index={}, id={}, type={}", item.getIndex(), item.getId(), item.getType());
+            // }
+
+        } catch (IOException e) {
+            log.warn("IOException, msg={}", e.getLocalizedMessage());
+
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
     public void insertUsers(List<User> rows) {
-        if (null == rows || rows.size() == 0)
-
-        {
+        if (null == rows || rows.size() == 0) {
             log.info("empty payload.");
             return;
         }
@@ -101,6 +119,31 @@ public class ElasticsearchDAOImp implements ElasticsearchDAO {
 
             throw new IllegalArgumentException(e);
         }
-        
+
+    }
+
+    @Override
+    public void insertUser(User row) {
+        if (null == row) {
+            log.info("empty payload.");
+            return;
+        }
+
+        IndexRequest request = new IndexRequest(database.toLowerCase()).id(row.getId() + "").source(ObjectUtils.toJson(row), XContentType.JSON);
+
+        try {
+            IndexResponse response = restHighLevelClient.index(request, RequestOptions.DEFAULT);
+
+            log.info("status={}", response.status().getStatus());
+
+            // for (BulkItemResponse item : Arrays.asList(response.getItems())) {
+            // log.info("index={}, id={}, type={}", item.getIndex(), item.getId(), item.getType());
+            // }
+
+        } catch (IOException e) {
+            log.warn("IOException, msg={}", e.getLocalizedMessage());
+
+            throw new IllegalArgumentException(e);
+        }
     }
 }

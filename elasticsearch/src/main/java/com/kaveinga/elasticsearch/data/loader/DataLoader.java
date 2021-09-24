@@ -62,6 +62,7 @@ public class DataLoader implements CommandLineRunner {
             user.setEmail(RandomGeneratorUtils.getRandomEmail(firstName + lastName));
             user.setFirstName(firstName);
             user.setLastName(lastName);
+            user.setDescription(RandomGeneratorUtils.getRandomAboutMe(firstName +" "+ lastName));
 
             List<String> genders = Arrays.asList("MALE", "FEMALE");
 

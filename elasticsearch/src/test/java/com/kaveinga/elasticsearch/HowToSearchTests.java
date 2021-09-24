@@ -14,6 +14,8 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -100,7 +102,10 @@ class HowToSearchTests {
     @Test
     void searchWithMatch() {
 
-        String firstName = "Ayla";
+        /**
+         * include two first names to illustrate contain
+         */
+        String firstName = "Leland Isabell";
 
         int pageNumber = 0;
         int pageSize = 10;
@@ -122,15 +127,134 @@ class HowToSearchTests {
         /**
          * Query
          */
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        /**
+         * Filter<br>
+         * match query is like contain in mysql<br>
+         * if firstName is a phrase like John the second. Any records with firstName contain John or second will return
+         */
+
+        searchSourceBuilder.query(QueryBuilders.matchQuery("firstName", firstName));
+
+        searchRequest.source(searchSourceBuilder);
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            /**
+             * Result<br>
+             * 
+             */
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    void searchWithMatchPhrase() {
+
+        String description = "His biggest fear";
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
+
+        /**
+         * Query
+         */
 
         /**
          * Filter<br>
          * match query is like contain in mysql
          */
-        boolQueryBuilder.filter(QueryBuilders.matchQuery("firstName", firstName));
+        searchSourceBuilder.query(QueryBuilders.matchPhraseQuery("description", description));
 
-        searchSourceBuilder.query(boolQueryBuilder);
+        searchRequest.source(searchSourceBuilder);
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+    
+    @Test
+    void searchWithMultiMatchAllFields() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
+
+        /**
+         * Query
+         */
+
+        /**
+         * Filter<br>
+         * match query is like contain in mysql<br>
+         * * means all fields<br>
+         * Isabell - firstName of a diff user <br>
+         * 3102060312 - phoneNumber of a diff user<br>
+         * biggest fear - description of a diff user<br>
+         */
+        
+        searchSourceBuilder.query(QueryBuilders.multiMatchQuery("Isabell 3102060312 biggest fear", "*"));
 
         searchRequest.source(searchSourceBuilder);
 
@@ -196,10 +320,9 @@ class HowToSearchTests {
          * the results that it already has. It can be better to return some results than none at all.
          */
         searchSourceBuilder.timeout(TimeValue.timeValueMinutes(2));
-        
 
         searchRequest.source(searchSourceBuilder);
-        
+
         searchRequest.searchType(SearchType.DEFAULT);
 
         /**
@@ -218,7 +341,85 @@ class HowToSearchTests {
         try {
             SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
 
-            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    void searchAllFields() {
+
+        String firstName = "Wilson";
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
+
+        /**
+         * Query
+         */
+        // BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        MatchQueryBuilder matchAllQuery = QueryBuilders.matchQuery("_all", firstName);
+
+        // /**
+        // * Filter<br>
+        // * match query is like contain in mysql
+        // */
+        //// boolQueryBuilder.filter(QueryBuilders.matchQuery("firstName", firstName));
+        //
+        // boolQueryBuilder.filter(QueryBuilders.matchQuery("_all", firstName));
+
+        searchSourceBuilder.query(matchAllQuery);
+
+        /**
+         * The timeout parameter tells the coordinating node how long it should wait before giving up and just returning
+         * the results that it already has. It can be better to return some results than none at all.
+         */
+        searchSourceBuilder.timeout(TimeValue.timeValueMinutes(2));
+
+        searchRequest.source(searchSourceBuilder);
+
+        searchRequest.searchType(SearchType.DEFAULT);
+
+        /**
+         * preference parameter allows you to control which shards or nodes are used to handle the search request.<br>
+         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-shard-routing.html<br>
+         * 
+         */
+        searchRequest.preference("firstName");
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
 
             List<User> users = getResponseResult(searchResponse.getHits());
 

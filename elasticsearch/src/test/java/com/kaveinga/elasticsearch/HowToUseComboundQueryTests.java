@@ -2,6 +2,7 @@ package com.kaveinga.elasticsearch;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -16,8 +17,11 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RegexpQueryBuilder;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -82,6 +86,58 @@ class HowToUseComboundQueryTests {
         boolQuery.filter(QueryBuilders.matchQuery("firstName", "Leland"));
 
         searchSourceBuilder.query(boolQuery);
+
+        searchRequest.source(searchSourceBuilder);
+
+        searchRequest.preference("firstName");
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    void searchWithFunctionScoreQuery() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName"}, new String[]{""});
+
+        /**
+         * Query
+         */
+        
+        searchSourceBuilder.query(QueryBuilders.functionScoreQuery(QueryBuilders.matchQuery("firstName", "Leland")).boost(5));
 
         searchRequest.source(searchSourceBuilder);
 

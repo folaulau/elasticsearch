@@ -17,6 +17,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RegexpQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootTest
-class HowToSearchTests {
+class HowToUseTermForSearchTests {
 
     @Value("${spring.datasource.name}")
     private String              database;
@@ -43,7 +44,7 @@ class HowToSearchTests {
     @Test
     void searchWithTerm() {
 
-        String firstName = "Ayla";
+        String firstName = "Isabell";
 
         int pageNumber = 0;
         int pageSize = 10;
@@ -65,271 +66,16 @@ class HowToSearchTests {
         /**
          * Query
          */
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         /**
          * Filter<br>
          * term query looks for exact match. Use keyword
          */
-        boolQueryBuilder.filter(QueryBuilders.termQuery("firstName.keyword", firstName));
 
-        searchSourceBuilder.query(boolQueryBuilder);
-
-        searchRequest.source(searchSourceBuilder);
-
-        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
-            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
-        } else {
-            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
-        }
-
-        try {
-            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-
-            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
-
-            List<User> users = getResponseResult(searchResponse.getHits());
-
-            log.info("results={}", ObjectUtils.toJson(users));
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
-    @Test
-    void searchWithMatch() {
-
-        /**
-         * include two first names to illustrate contain
-         */
-        String firstName = "Leland Isabell";
-
-        int pageNumber = 0;
-        int pageSize = 10;
-
-        SearchRequest searchRequest = new SearchRequest(database);
-        searchRequest.allowPartialSearchResults(true);
-        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
-
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.from(pageNumber * pageSize);
-        searchSourceBuilder.size(pageSize);
-        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-
-        /**
-         * fetch only a few fields
-         */
-        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
-
-        /**
-         * Query
-         */
-
-        /**
-         * Filter<br>
-         * match query is like contain in mysql<br>
-         * if firstName is a phrase like John the second. Any records with firstName contain John or second will return
-         */
-
-        searchSourceBuilder.query(QueryBuilders.matchQuery("firstName", firstName));
+        searchSourceBuilder.query(QueryBuilders.termQuery("firstName.keyword", firstName));
 
         searchRequest.source(searchSourceBuilder);
 
-        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
-            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
-        } else {
-            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
-        }
-
-        try {
-            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-
-            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
-
-            List<User> users = getResponseResult(searchResponse.getHits());
-
-            /**
-             * Result<br>
-             * 
-             */
-
-            log.info("results={}", ObjectUtils.toJson(users));
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
-    @Test
-    void searchWithMatchPhrase() {
-
-        String description = "His biggest fear";
-
-        int pageNumber = 0;
-        int pageSize = 10;
-
-        SearchRequest searchRequest = new SearchRequest(database);
-        searchRequest.allowPartialSearchResults(true);
-        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
-
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.from(pageNumber * pageSize);
-        searchSourceBuilder.size(pageSize);
-        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-
-        /**
-         * fetch only a few fields
-         */
-        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
-
-        /**
-         * Query
-         */
-
-        /**
-         * Filter<br>
-         * match query is like contain in mysql
-         */
-        searchSourceBuilder.query(QueryBuilders.matchPhraseQuery("description", description));
-
-        searchRequest.source(searchSourceBuilder);
-
-        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
-            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
-        } else {
-            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
-        }
-
-        try {
-            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-
-            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
-
-            List<User> users = getResponseResult(searchResponse.getHits());
-
-            log.info("results={}", ObjectUtils.toJson(users));
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-    
-    @Test
-    void searchWithMultiMatchAllFields() {
-
-        int pageNumber = 0;
-        int pageSize = 10;
-
-        SearchRequest searchRequest = new SearchRequest(database);
-        searchRequest.allowPartialSearchResults(true);
-        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
-
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.from(pageNumber * pageSize);
-        searchSourceBuilder.size(pageSize);
-        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-
-        /**
-         * fetch only a few fields
-         */
-        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
-
-        /**
-         * Query
-         */
-
-        /**
-         * Filter<br>
-         * match query is like contain in mysql<br>
-         * * means all fields<br>
-         * Isabell - firstName of a diff user <br>
-         * 3102060312 - phoneNumber of a diff user<br>
-         * biggest fear - description of a diff user<br>
-         */
-        
-        searchSourceBuilder.query(QueryBuilders.multiMatchQuery("Isabell 3102060312 biggest fear", "*"));
-
-        searchRequest.source(searchSourceBuilder);
-
-        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
-            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
-        } else {
-            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
-        }
-
-        try {
-            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
-
-            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
-
-            List<User> users = getResponseResult(searchResponse.getHits());
-
-            log.info("results={}", ObjectUtils.toJson(users));
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
-
-    @Test
-    void searchWithExtraRequestConfigs() {
-
-        String firstName = "Ayla";
-
-        int pageNumber = 0;
-        int pageSize = 10;
-
-        SearchRequest searchRequest = new SearchRequest(database);
-        searchRequest.allowPartialSearchResults(true);
-        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
-
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.from(pageNumber * pageSize);
-        searchSourceBuilder.size(pageSize);
-        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-
-        /**
-         * fetch only a few fields
-         */
-        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
-
-        /**
-         * Query
-         */
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-
-        /**
-         * Filter<br>
-         * match query is like contain in mysql
-         */
-        boolQueryBuilder.filter(QueryBuilders.matchQuery("firstName", firstName));
-
-        searchSourceBuilder.query(boolQueryBuilder);
-
-        /**
-         * The timeout parameter tells the coordinating node how long it should wait before giving up and just returning
-         * the results that it already has. It can be better to return some results than none at all.
-         */
-        searchSourceBuilder.timeout(TimeValue.timeValueMinutes(2));
-
-        searchRequest.source(searchSourceBuilder);
-
-        searchRequest.searchType(SearchType.DEFAULT);
-
-        /**
-         * preference parameter allows you to control which shards or nodes are used to handle the search request.<br>
-         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-shard-routing.html<br>
-         * 
-         */
         searchRequest.preference("firstName");
 
         if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
@@ -355,9 +101,7 @@ class HowToSearchTests {
     }
 
     @Test
-    void searchAllFields() {
-
-        String firstName = "Wilson";
+    void searchWithTermAndMultiValues() {
 
         int pageNumber = 0;
         int pageSize = 10;
@@ -379,35 +123,253 @@ class HowToSearchTests {
         /**
          * Query
          */
-        // BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-
-        MatchQueryBuilder matchAllQuery = QueryBuilders.matchQuery("_all", firstName);
-
-        // /**
-        // * Filter<br>
-        // * match query is like contain in mysql
-        // */
-        //// boolQueryBuilder.filter(QueryBuilders.matchQuery("firstName", firstName));
-        //
-        // boolQueryBuilder.filter(QueryBuilders.matchQuery("_all", firstName));
-
-        searchSourceBuilder.query(matchAllQuery);
 
         /**
-         * The timeout parameter tells the coordinating node how long it should wait before giving up and just returning
-         * the results that it already has. It can be better to return some results than none at all.
+         * Filter<br>
+         * term query looks for exact match. Use keyword
          */
-        searchSourceBuilder.timeout(TimeValue.timeValueMinutes(2));
+        searchSourceBuilder.query(QueryBuilders.termsQuery("firstName.keyword", "Leland", "Harmony", "Isabell"));
 
         searchRequest.source(searchSourceBuilder);
 
-        searchRequest.searchType(SearchType.DEFAULT);
+        searchRequest.preference("firstName");
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    void searchWithExistQuery() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
 
         /**
-         * preference parameter allows you to control which shards or nodes are used to handle the search request.<br>
-         * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-shard-routing.html<br>
-         * 
+         * fetch only a few fields
          */
+        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
+
+        /**
+         * Query
+         */
+
+        /**
+         * Filter<br>
+         * term query looks for exact match. Use keyword
+         */
+        searchSourceBuilder.query(QueryBuilders.existsQuery("firstName"));
+
+        searchRequest.source(searchSourceBuilder);
+
+        searchRequest.preference("firstName");
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-wildcard-query.html<br>
+     * This parameter supports two wildcard operators:<br>
+     * ?, which matches any single character<br>
+     * *, which can match zero or more characters, including an empty one<br>
+     * Warning: Avoid beginning patterns with * or ?. This can increase the iterations needed to find matching terms and
+     * slow search performance.<br>
+     */
+    @Test
+    void searchWithWildcardQuery() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        // searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName", "cards" }, new String[]{""});
+
+        /**
+         * Query
+         */
+
+        /**
+         * Filter<br>
+         * term query looks for exact match. Use keyword<br>
+         * These matching terms can include Honey, Henny, or Horsey.<br>
+         */
+        searchSourceBuilder.query(QueryBuilders.wildcardQuery("firstName", "H*y"));
+
+        searchRequest.source(searchSourceBuilder);
+
+        searchRequest.preference("firstName");
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+    
+    /**
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html<br>
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/regexp-syntax.html
+     */
+    @Test
+    void searchWithRegexQuery() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName","description"}, new String[]{""});
+
+        /**
+         * Query<br>
+         * Sydnee<br>
+         * . means match any character.<br>
+         * * Repeat the preceding character zero or more times.<br>
+         */
+        searchSourceBuilder.query(QueryBuilders.regexpQuery("firstName", "S.*e")
+                .flags(RegexpQueryBuilder.DEFAULT_FLAGS_VALUE)
+                .caseInsensitive(true));
+
+        searchRequest.source(searchSourceBuilder);
+
+        searchRequest.preference("firstName");
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+    
+    /**
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html
+     */
+    @Test
+    void searchWithIdsQuery() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        searchSourceBuilder.fetchSource(new String[]{ "id", "firstName", "lastName","description"}, new String[]{""});
+
+        /**
+         * Query<br>
+         * Sydnee<br>
+         * . means match any character.<br>
+         * * Repeat the preceding character zero or more times.<br>
+         */
+        searchSourceBuilder.query(QueryBuilders.idsQuery().addIds("1","5"));
+
+        searchRequest.source(searchSourceBuilder);
+
         searchRequest.preference("firstName");
 
         if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {

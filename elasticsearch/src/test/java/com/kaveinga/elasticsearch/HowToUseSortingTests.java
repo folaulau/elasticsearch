@@ -86,6 +86,8 @@ class HowToUseSortingTests {
          * for string fields, you have to use keyword
          */
         searchSourceBuilder.sort(new FieldSortBuilder("firstName.keyword").order(SortOrder.DESC));
+        
+        log.info("\n{\n\"sort\":{}\n}", searchSourceBuilder.sorts().toString());
 
         searchRequest.source(searchSourceBuilder);
 

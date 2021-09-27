@@ -127,8 +127,20 @@ public final class RandomGeneratorUtils {
     // @formatter:off
  
     private static final List<Address> utahAddresses = Arrays.asList(
-            new Address("2768 N Desert Forest Ln", "Lehi", "UT", "84043", 40.422580, -111.895960),
-            new Address("2625 N 180 E", "Lehi", "UT", "84043", 40.420960, -111.847040));
+            new Address("2768 N Desert Forest Ln",null, "Lehi", "UT", "84043", 40.422580, -111.895960),
+            new Address("2625 N 180 E",null, "Lehi", "UT", "84043", 40.420960, -111.847040),
+            new Address("672 E Sandhill Ct",null, "Lehi", "UT", "84043", 40.366610, -111.838710),
+            new Address("2761 W Chestnut St",null, "Lehi", "UT", "84043", 40.453410, -111.893700),
+            new Address("304 W Stillwater Dr",null, "Saratoga Springs", "UT", "84045", 40.313810, -111.902280),
+            new Address("10548 S Cedar Springs Ln",null, "South Jordan", "UT", "84009", 40.313810, -111.902280),
+            new Address("2479 N Sunset Vw",null, "Lehi", "UT", "84045", 40.418721,-111.892874),
+            new Address("813 Whipple Dr", null,"Lehi", "UT", "84043", 40.313810, -111.902280),
+            new Address("11153 S Heather Grove Ln W",null, "South Jordan", "UT", "84095", 40.548734, -111.935977),
+            new Address("1822 W Tarali Way",null, "South Jordan", "UT", "84095", 40.561578, -111.940990),
+            new Address("754 E 1825 S",null, "Bountiful", "UT", "84010", 40.870491,-111.865992),
+            new Address("5218 W Leila Ln",null, "Herriman", "UT", "84096", 40.492879,-112.015359),
+            new Address("12028 S Doves Landing Dr",null, "Riverton", "UT", "84065", 40.532793,-111.970264),
+            new Address("11235 S Glen Croft Ln",null, "Sandy", "UT", "84070", 40.547299,-111.879789));
     
  // @formatter:on
 

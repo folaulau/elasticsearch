@@ -9,11 +9,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.kaveinga.elasticsearch.dto.GeoPoint;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -68,12 +72,13 @@ public class Address implements Serializable {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime     updatedAt;
 
-    public Address(String street, String city, String state, String zipcode) {
-        this(street, city, state, zipcode, null, null);
+    public Address(String street, String street2, String city, String state, String zipcode) {
+        this(street, street2, city, state, zipcode, null, null);
     }
 
-    public Address(String street, String city, String state, String zipcode, Double latitude, Double longitude) {
+    public Address(String street, String street2, String city, String state, String zipcode, Double latitude, Double longitude) {
         this.street = street;
+        this.street2 = street2;
         this.city = city;
         this.state = state;
         this.zipcode = zipcode;
@@ -81,4 +86,44 @@ public class Address implements Serializable {
         this.latitude = latitude;
     }
 
+    public GeoPoint getLocation() {
+        return new GeoPoint(latitude, longitude);
+    }
+
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(this.id)
+                .append(this.street)
+                .append(this.street2)
+                .append(this.city)
+                .append(this.state)
+                .append(this.longitude)
+                .append(this.latitude)
+                .toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+        Address other = (Address) obj;
+        return new EqualsBuilder()
+                .append(this.id, other.id)
+                .append(this.street, other.street)
+                .append(this.street2, other.street2)
+                .append(this.city, other.city)
+                .append(this.state, other.state)
+                .append(this.longitude, other.longitude)
+                .append(this.latitude, other.latitude)
+                .isEquals();
+    }
 }

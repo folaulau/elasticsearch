@@ -3,6 +3,7 @@ package com.kaveinga.elasticsearch.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -65,6 +66,12 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private UserStatus        status;
+    
+    /**
+     * 5 star rating
+     */
+    @Column(name = "rating")
+    private Integer rating;
 
     @JsonIgnoreProperties(value = {"user"})
     @OneToMany(mappedBy = "user")
@@ -89,6 +96,16 @@ public class User implements Serializable {
 
     public User(Long id) {
         this.id = id;
+    }
+
+    public int getAge() {
+        if (dateOfBirth == null) {
+            return 0;
+        }
+        
+        Period age = Period.between(dateOfBirth, LocalDate.now());
+        
+        return age.getYears();
     }
 
 }

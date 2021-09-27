@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SpringBootTest
-class HowToUseMatchForSearchTests {
+class HowToUseFullTextSearchTests {
 
     @Value("${spring.datasource.name}")
     private String              database;

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.kaveinga.elasticsearch.dao.CardRepository;
 import com.kaveinga.elasticsearch.dao.SwipeRepository;
 import com.kaveinga.elasticsearch.dao.UserRepository;
+import com.kaveinga.elasticsearch.entity.Address;
 import com.kaveinga.elasticsearch.entity.Card;
 import com.kaveinga.elasticsearch.entity.Swipe;
 import com.kaveinga.elasticsearch.entity.User;
@@ -66,8 +67,15 @@ public class DataLoader implements CommandLineRunner {
             user.setDescription(RandomGeneratorUtils.getRandomAboutMe(firstName + " " + lastName));
             user.setStatus(UserStatus.getRandomStatus());
             user.setLastLoggedInAt(LocalDateTime.now().minusMinutes(RandomGeneratorUtils.getIntegerWithin(1, 3000)));
-            user.addAddress(RandomGeneratorUtils.getRandomUtahAddress());
-            
+
+            Address primaryAddress = RandomGeneratorUtils.getRandomAddress();
+            primaryAddress.setPrimary(true);
+            user.addAddress(primaryAddress);
+            Address secondaryAddress = RandomGeneratorUtils.getRandomAddress();
+            secondaryAddress.setPrimary(false);
+            user.addAddress(secondaryAddress);
+            user.setRating(RandomGeneratorUtils.getIntegerWithin(1, 6));
+
             List<String> genders = Arrays.asList("MALE", "FEMALE");
 
             user.setGender(genders.get(RandomGeneratorUtils.getIntegerWithin(0, 2)));

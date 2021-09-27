@@ -87,12 +87,6 @@ public class ElasticMappingServiceImp implements ElasticMappingService {
                     }
                     builder.endObject();
                     
-                    builder.startObject("location");
-                    {
-                        builder.field("type", "geo_point");
-                    }
-                    builder.endObject();
-
                     /**
                      * nested object cards
                      */
@@ -139,6 +133,25 @@ public class ElasticMappingServiceImp implements ElasticMappingService {
                                     builder.endObject();
                                 }
                                 builder.endObject();
+                            }
+                            builder.endObject();
+                        }
+                        builder.endObject();
+                    }
+                    builder.endObject();
+                    
+                    /**
+                     * nested object addresses
+                     */
+                    builder.startObject("addresses");
+                    {
+                        builder.field("type", "nested");
+                        
+                        builder.startObject("properties");
+                        {
+                            builder.startObject("location");
+                            {
+                                builder.field("type", "geo_point");
                             }
                             builder.endObject();
                         }

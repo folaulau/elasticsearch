@@ -161,7 +161,7 @@ class HowToUseMatchForSearchTests {
         }
 
     }
-    
+
     @Test
     void searchWithMultiMatchAllFields() {
 
@@ -194,16 +194,15 @@ class HowToUseMatchForSearchTests {
          * 3102060312 - phoneNumber of a diff user<br>
          * biggest fear - description of a diff user<br>
          */
-        
+
         searchSourceBuilder.query(QueryBuilders.multiMatchQuery("Isabell 3102060312 biggest fear", "*"));
-        
-        
+
         /**
          * query against swipe(nested object) merchantName but did not return anything which it should.<br>
          * * does not work with nested fields
          */
-        //searchSourceBuilder.query(QueryBuilders.multiMatchQuery("Best Buy", "*"));
-        
+        // searchSourceBuilder.query(QueryBuilders.multiMatchQuery("Best Buy", "*"));
+
         searchRequest.preference("multi-fields");
 
         searchRequest.source(searchSourceBuilder);
@@ -225,6 +224,100 @@ class HowToUseMatchForSearchTests {
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html<br>
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax<br>
+     * You can use the query_string query to create a complex search that includes wildcard characters, searches across
+     * multiple fields, and more.<br>
+     * 
+     * Because it returns an error for any invalid syntax, we don’t recommend using the query_string query for search
+     * boxes.<br>
+     * If you don’t need to support a query syntax, consider using the match query. If you need the features of a query
+     * syntax, use the simple_query_string query, which is less strict.<br>
+     * 
+     * Note that query string can be written using bool query<br>
+     */
+    @Test
+    void searchWithQueryString() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+
+        /**
+         * fetch only a few fields
+         */
+        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "dateOfBirth", "description", "status"}, new String[]{""});
+
+        /**
+         * Query<br>
+         */
+
+        /**
+         * any documents that contain "description" in any fields
+         */
+        // searchSourceBuilder.query(QueryBuilders.queryStringQuery("His biggest fear").minimumShouldMatch("3"));
+
+        /**
+         * dateOfBirth before 1990-01-01
+         */
+        // searchSourceBuilder.query(QueryBuilders.queryStringQuery("dateOfBirth:{* TO 1990-01-01}"));
+
+        /**
+         * The preferred operators are + (this term must be present) and - (this term must not be present). All other
+         * terms are optional.<br>
+         * quick brown +fox -news<br>
+         * The familiar boolean operators AND, OR and NOT (also written &&, || and !) are also supported but beware that
+         * they do not honor the usual precedence rules, so parentheses should be used whenever multiple operators are
+         * used together.<br>
+         */
+
+        // OR is optional as it's the default operator
+        // searchSourceBuilder.query(QueryBuilders.queryStringQuery("description:(greedy NOT haula) OR status:(ACTIVE OR
+        // SUSPENDED)"));
+
+        // using AND
+        // searchSourceBuilder.query(QueryBuilders.queryStringQuery("description:(greedy NOT haula) AND status:(ACTIVE
+        // OR SUSPENDED)"));
+
+        // using minimumShouldMatch
+        searchSourceBuilder.query(QueryBuilders.queryStringQuery("description:(greedy NOT haula) OR status:(ACTIVE OR SUSPENDED) OR dateOfBirth:(1985-09-26)").minimumShouldMatch("3"));
+
+        searchRequest.source(searchSourceBuilder);
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("totalShards={}, totalHits={}", searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            log.warn("IOException, msg={}", e.getLocalizedMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            log.warn("Exception, msg={}", e.getLocalizedMessage());
             e.printStackTrace();
         }
 

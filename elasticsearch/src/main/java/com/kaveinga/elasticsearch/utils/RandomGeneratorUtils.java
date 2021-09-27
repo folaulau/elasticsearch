@@ -1,11 +1,14 @@
 package com.kaveinga.elasticsearch.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+
+import com.kaveinga.elasticsearch.entity.Address;
 
 /**
  * @author fkaveinga
@@ -101,17 +104,35 @@ public final class RandomGeneratorUtils {
     }
 
     public static String getRandomLastname() {
-        return lastnames.get(RandomGeneratorUtils.getIntegerWithin(0, lastnames.size() - 1));
+        return lastnames.get(RandomGeneratorUtils.getIntegerWithin(0, lastnames.size()));
     }
 
     public static String getRandomAboutMe(String name) {
-        String aboutMe = aboutMes.get(RandomGeneratorUtils.getIntegerWithin(0, aboutMes.size() - 1));
+        String aboutMe = aboutMes.get(RandomGeneratorUtils.getIntegerWithin(0, aboutMes.size()));
         return aboutMe.replace("{name}", name);
+    }
+
+    public static Address getRandomAddress() {
+        List<Address> addresses = new ArrayList<Address>();
+        addresses.addAll(utahAddresses);
+        return addresses.get(RandomGeneratorUtils.getIntegerWithin(0, addresses.size()));
+    }
+
+    public static Address getRandomUtahAddress() {
+        return utahAddresses.get(RandomGeneratorUtils.getIntegerWithin(0, utahAddresses.size()));
     }
 
     // *********** TOO BIG, LEAVE THESE HERE ***************
 
-    private static final List<String> aboutMes   = Arrays.asList(
+    // @formatter:off
+ 
+    private static final List<Address> utahAddresses = Arrays.asList(
+            new Address("2768 N Desert Forest Ln", "Lehi", "UT", "84043", 40.422580, -111.895960),
+            new Address("2625 N 180 E", "Lehi", "UT", "84043", 40.420960, -111.847040));
+    
+ // @formatter:on
+
+    private static final List<String>  aboutMes      = Arrays.asList(
             "{name}, 21, dishy psychology student {name} is a dishy psychology student who finds it hard to stay out of jail. He looks trustworthy. He always carries two phones. He must use his talent for campaigning to heal the people around him before he can work on his own problems.",
             "{name}, 14, outspoken teenager. A fourteen-year-old teenager is traumatised by the loss of his co-worker when he was thirteen. He looks exhausted. He strongly dislikes sheep. He has been wrongly accused of killing his sister.",
             "{name}, 97, nosy software developer. {name} is a nosy software developer who finds it hard to trust people. He usually wears orange trousers. His biggest fear is his friends discovering that he can't laugh. His purpose in life is to protect others.",
@@ -123,7 +144,7 @@ public final class RandomGeneratorUtils {
             "{name}, 13, forceful teenager. A thirteen-year-old teenager is angry about violence on TV. Physically, he is built like a beanstalk. His top quality is that he is particularly polite. He must use his talent for swimming to heal the people around him before he can work on his own problems.",
             "{name}, 21, entertaining radiologist. {name} is an entertaining man from Seattle who can only swim when he is hungry. He usually wears a bullet-proof vest. His top quality is that he is particularly law-abiding. He is hiding a terrible secret concerning his relative.");
 
-    private static final List<String> firstnames = Arrays.asList("Jacob", "Michael", "Ethan", "Joshua", "Daniel", "Alexander", "Anthony", "William", "Christopher", "Matthew", "Jayden", "Andrew",
+    private static final List<String>  firstnames    = Arrays.asList("Jacob", "Michael", "Ethan", "Joshua", "Daniel", "Alexander", "Anthony", "William", "Christopher", "Matthew", "Jayden", "Andrew",
             "Joseph", "David", "Noah", "Aiden", "James", "Ryan", "Logan", "John", "Nathan", "Elijah", "Christian", "Gabriel", "Benjamin", "Jonathan", "Tyler", "Samuel", "Nicholas", "Gavin", "Dylan",
             "Jackson", "Brandon", "Caleb", "Mason", "Angel", "Isaac", "Evan", "Jack", "Kevin", "Jose", "Isaiah", "Luke", "Landon", "Justin", "Lucas", "Zachary", "Jordan", "Robert", "Aaron", "Brayden",
             "Thomas", "Cameron", "Hunter", "Austin", "Adrian", "Connor", "Owen", "Aidan", "Jason", "Julian", "Wyatt", "Charles", "Luis", "Carter", "Juan", "Chase", "Diego", "Jeremiah", "Brody",
@@ -232,9 +253,9 @@ public final class RandomGeneratorUtils {
             "Averi", "Esperanza", "Micaela", "Selina", "Alyvia", "Chana", "Avah", "Donna", "Kaylah", "Ashtyn", "Karsyn", "Makaila", "Shayna", "Essence", "Leticia", "Miya", "Rory", "Desirae", "Kianna",
             "Laurel", "Neveah", "Amaris", "Hadassah", "Dania", "Hailie", "Jamiya", "Kathy", "Laylah", "Riya", "Diya", "Carleigh", "Iyana", "Kenley", "Sloane", "Elianna");
 
-    private static final List<String> lastnames  = Arrays.asList("Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Rodriguez", "Wilson", "Martinez", "Anderson", "Taylor",
-            "Thomas", "Hernandez", "Moore", "Martin", "Jackson", "Thompson", "White", "Lopez", "Lee", "Gonzalez", "Harris", "Clark", "Lewis", "Robinson", "Walker", "Perez", "Hall", "Young", "Allen",
-            "Sanchez", "Wright", "King", "Scott", "Green", "Baker", "Adams", "Nelson", "Hill", "Ramirez", "Campbell", "Mitchell", "Roberts", "Carter", "Phillips", "Evans", "Turner", "Torres",
+    private static final List<String>  lastnames     = Arrays.asList("Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Garcia", "Rodriguez", "Wilson", "Martinez", "Anderson",
+            "Taylor", "Thomas", "Hernandez", "Moore", "Martin", "Jackson", "Thompson", "White", "Lopez", "Lee", "Gonzalez", "Harris", "Clark", "Lewis", "Robinson", "Walker", "Perez", "Hall", "Young",
+            "Allen", "Sanchez", "Wright", "King", "Scott", "Green", "Baker", "Adams", "Nelson", "Hill", "Ramirez", "Campbell", "Mitchell", "Roberts", "Carter", "Phillips", "Evans", "Turner", "Torres",
             "Parker", "Collins", "Edwards", "Stewart", "Flores", "Morris", "Nguyen", "Murphy", "Rivera", "Cook", "Rogers", "Morgan", "Peterson", "Cooper", "Reed", "Bailey", "Bell", "Gomez", "Kelly",
             "Howard", "Ward", "Cox", "Diaz", "Richardson", "Wood", "Watson", "Brooks", "Bennett", "Gray", "James", "Reyes", "Cruz", "Hughes", "Price", "Myers", "Long", "Foster", "Sanders", "Ross",
             "Morales", "Powell", "Sullivan", "Russell", "Ortiz", "Jenkins", "Gutierrez", "Perry", "Butler", "Barnes", "Fisher", "Henderson", "Coleman", "Simmons", "Patterson", "Jordan", "Reynolds",

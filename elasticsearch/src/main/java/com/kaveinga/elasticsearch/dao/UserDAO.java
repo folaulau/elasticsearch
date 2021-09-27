@@ -13,4 +13,6 @@ public interface UserDAO {
     List<RowDTO> get(int start, int end);
     
     Page<User> get(Pageable pageable);
+    
+    User getById(Long id);
 }

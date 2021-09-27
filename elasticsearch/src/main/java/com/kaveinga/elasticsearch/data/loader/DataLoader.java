@@ -19,6 +19,7 @@ import com.kaveinga.elasticsearch.dao.UserRepository;
 import com.kaveinga.elasticsearch.entity.Card;
 import com.kaveinga.elasticsearch.entity.Swipe;
 import com.kaveinga.elasticsearch.entity.User;
+import com.kaveinga.elasticsearch.status.UserStatus;
 import com.kaveinga.elasticsearch.utils.RandomGeneratorUtils;
 
 @Component
@@ -62,8 +63,11 @@ public class DataLoader implements CommandLineRunner {
             user.setEmail(RandomGeneratorUtils.getRandomEmail(firstName + lastName));
             user.setFirstName(firstName);
             user.setLastName(lastName);
-            user.setDescription(RandomGeneratorUtils.getRandomAboutMe(firstName +" "+ lastName));
-
+            user.setDescription(RandomGeneratorUtils.getRandomAboutMe(firstName + " " + lastName));
+            user.setStatus(UserStatus.getRandomStatus());
+            user.setLastLoggedInAt(LocalDateTime.now().minusMinutes(RandomGeneratorUtils.getIntegerWithin(1, 3000)));
+            user.addAddress(RandomGeneratorUtils.getRandomUtahAddress());
+            
             List<String> genders = Arrays.asList("MALE", "FEMALE");
 
             user.setGender(genders.get(RandomGeneratorUtils.getIntegerWithin(0, 2)));

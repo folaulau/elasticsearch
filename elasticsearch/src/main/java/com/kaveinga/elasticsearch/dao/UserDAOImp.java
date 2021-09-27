@@ -113,4 +113,9 @@ public class UserDAOImp implements UserDAO {
         return userRepository.findAll(pageable);
     }
 
+    @Override
+    public User getById(Long id) {
+        return userRepository.getById(id);
+    }
+
 }

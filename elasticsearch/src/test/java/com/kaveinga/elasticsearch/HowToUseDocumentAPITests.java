@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -24,6 +25,7 @@ import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.get.GetResult;
@@ -201,16 +203,68 @@ class HowToUseDocumentAPITests {
         request.setMaxDocs(100);
 
         StringBuilder inlineUpdates = new StringBuilder();
-        inlineUpdates.append("ctx._source.firstName='Folaulau"+RandomGeneratorUtils.getLongWithin(19, 4000)+"';");
-        inlineUpdates.append("ctx._source.lastName='Kaveinga"+RandomGeneratorUtils.getLongWithin(19, 4000)+"';");
+        inlineUpdates.append("ctx._source.firstName='Folaulau" + RandomGeneratorUtils.getLongWithin(19, 4000) + "';");
+        inlineUpdates.append("ctx._source.lastName='Kaveinga" + RandomGeneratorUtils.getLongWithin(19, 4000) + "';");
 
         request.setScript(new Script(ScriptType.INLINE, "painless", inlineUpdates.toString(), Collections.emptyMap()));
 
         try {
             BulkByScrollResponse bulkResponse = restHighLevelClient.updateByQuery(request, RequestOptions.DEFAULT);
 
-            log.info("timedOut={}, updatedDocs={}, batches={}, totalDocs={}", bulkResponse.isTimedOut(), bulkResponse.getUpdated(),  bulkResponse.getBatches(), bulkResponse.getTotal());
+            log.info("timedOut={}, updatedDocs={}, batches={}, totalDocs={}", bulkResponse.isTimedOut(), bulkResponse.getUpdated(), bulkResponse.getBatches(), bulkResponse.getTotal());
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    void updateNestedObjWithQuery() {
+
+        UpdateByQueryRequest request = new UpdateByQueryRequest(database);
+
+        /**
+         * Query<br>
+         * It can be a compound query or a simple query
+         */
+
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        
+        int id = 31;
+
+        boolQuery.filter(QueryBuilders.matchQuery("cards.id", ""+id));
+
+        request.setQuery(QueryBuilders.nestedQuery("cards", boolQuery, ScoreMode.None));
+
+        request.setMaxDocs(100);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        params.put("active", false);
+        params.put("cardNumber", "1234567890");
+
+        StringBuilder inlineUpdates = new StringBuilder();
+        inlineUpdates.append("for(int i=0;i<ctx._source.cards.size();i++){");
+        inlineUpdates.append("if(ctx._source.cards.get(i).id=="+id+"){");
+        /**
+         * update card with the latest info<br>
+         * Another example would be, let's say you have a post index with a user nested object. You can update the user
+         * info when a user updates his or her user profile.
+         */
+        inlineUpdates.append("ctx._source.cards[i]=params;");// update card with latest change.
+        inlineUpdates.append("}");
+        inlineUpdates.append("}");
+
+        request.setScript(new Script(ScriptType.INLINE, "painless", inlineUpdates.toString(), params));
+
+        try {
+            BulkByScrollResponse bulkResponse = restHighLevelClient.updateByQuery(request, RequestOptions.DEFAULT);
+
+            log.info("timedOut={}, updatedDocs={}, batches={}, totalDocs={}", bulkResponse.isTimedOut(), bulkResponse.getUpdated(), bulkResponse.getBatches(), bulkResponse.getTotal());
+        } catch (IOException e) {
+            log.warn("IOException, msg={}", e.getLocalizedMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            log.warn("Exception, msg={}", e.getLocalizedMessage());
             e.printStackTrace();
         }
     }

@@ -77,7 +77,7 @@ class HowToUseSortingTests {
         /**
          * fetch only a few fields
          */
-        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "rating", "dateOfBirth", "addresses.street"}, new String[]{""});
+        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "rating", "dateOfBirth"}, new String[]{""});
 
         searchSourceBuilder.sort(new FieldSortBuilder("dateOfBirth").order(SortOrder.ASC));
         // searchSourceBuilder.sort(new FieldSortBuilder("rating").order(SortOrder.DESC));
@@ -85,7 +85,7 @@ class HowToUseSortingTests {
         /**
          * for string fields, you have to use keyword
          */
-        searchSourceBuilder.sort(new FieldSortBuilder("firstName.keyword").order(SortOrder.DESC));
+        //searchSourceBuilder.sort(new FieldSortBuilder("firstName.keyword").order(SortOrder.DESC));
         
         log.info("\n{\n\"sort\":{}\n}", searchSourceBuilder.sorts().toString());
 

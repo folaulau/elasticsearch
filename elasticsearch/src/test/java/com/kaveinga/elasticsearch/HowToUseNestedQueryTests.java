@@ -123,6 +123,70 @@ class HowToUseNestedQueryTests {
         }
 
     }
+    
+    @Test
+    void searchWithNestedCardsQuery() {
+
+        int pageNumber = 0;
+        int pageSize = 10;
+
+        SearchRequest searchRequest = new SearchRequest(database);
+        searchRequest.allowPartialSearchResults(true);
+        searchRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.from(pageNumber * pageSize);
+        searchSourceBuilder.size(pageSize);
+        searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
+        /**
+         * fetch only a few fields
+         */
+        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "cards.id","cards.cardNumber","cards.active"}, new String[]{""});
+
+        /**
+         * Query with bool
+         */
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+
+        boolQuery.filter(QueryBuilders.matchQuery("cards.id", "16"));
+
+        searchSourceBuilder.query(QueryBuilders.nestedQuery("cards", boolQuery, ScoreMode.None));
+
+        /**
+         * Query with query string<br>
+         * not working as "304 W Stillwater Dr" are tokenized which they should not be<br>
+         */
+        // StringBuilder stringQuery = new StringBuilder();
+        // stringQuery.append("addresses.street:(304 W Stillwater Dr)");
+        // QueryStringQueryBuilder queryStringQuery = QueryBuilders.queryStringQuery(stringQuery.toString());
+        //
+        // searchSourceBuilder.query(QueryBuilders.nestedQuery("addresses", queryStringQuery, ScoreMode.None));
+
+        searchRequest.source(searchSourceBuilder);
+
+        searchRequest.preference("nested-address");
+
+        if (searchSourceBuilder.sorts() != null && searchSourceBuilder.sorts().size() > 0) {
+            log.info("\n{\n\"query\":{}, \"sort\":{}\n}", searchSourceBuilder.query().toString(), searchSourceBuilder.sorts().toString());
+        } else {
+            log.info("\n{\n\"query\":{}\n}", searchSourceBuilder.query().toString());
+        }
+
+        try {
+            SearchResponse searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+
+            log.info("isTimedOut={}, totalShards={}, totalHits={}", searchResponse.isTimedOut(), searchResponse.getTotalShards(), searchResponse.getHits().getTotalHits().value);
+
+            List<User> users = getResponseResult(searchResponse.getHits());
+
+            log.info("results={}", ObjectUtils.toJson(users));
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
 
     /**
      * https://www.elastic.co/guide/en/elasticsearch/reference/7.x/query-dsl-nested-query.html<br>

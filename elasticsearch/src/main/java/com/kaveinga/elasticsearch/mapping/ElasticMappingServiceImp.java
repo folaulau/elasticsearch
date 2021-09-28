@@ -87,6 +87,25 @@ public class ElasticMappingServiceImp implements ElasticMappingService {
                     }
                     builder.endObject();
                     
+                    builder.startObject("description");
+                    {
+                        builder.field("type", "text");
+                        builder.field("analyzer", "english");
+                    }
+                    builder.endObject();
+                    
+                    builder.startObject("status");
+                    {
+                        builder.field("type", "text");
+                        /**
+                         * A field with this mapping will not count how many times a term appears, 
+                         * and will not be usable for phrase or proximity queries. <br>
+                         * https://www.elastic.co/guide/en/elasticsearch/reference/current/position-increment-gap.html
+                         */
+                        builder.field("index_options", "docs");
+                    }
+                    builder.endObject();
+                    
                     /**
                      * nested object cards
                      */

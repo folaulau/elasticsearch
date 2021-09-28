@@ -139,7 +139,9 @@ public final class RandomGeneratorUtils {
             new Address("1822 W Tarali Way",null, "South Jordan", "UT", "84095", 40.561578, -111.940990),
             new Address("754 E 1825 S",null, "Bountiful", "UT", "84010", 40.870491,-111.865992),
             new Address("5218 W Leila Ln",null, "Herriman", "UT", "84096", 40.492879,-112.015359),
-            new Address("12028 S Doves Landing Dr",null, "Riverton", "UT", "84065", 40.532793,-111.970264),
+            new Address("5642 W Stillwell Ln",null, "Herriman", "UT", "84096", 40.526588,-112.015359),
+            new Address("12028 S Doves Landing Dr",null, "Riverton", "UT", "84065", 40.532793,-112.025029),
+            new Address("989 E 1420 N",null, "American Fork", "UT", "84003", 40.405478,-111.770621),
             new Address("11235 S Glen Croft Ln",null, "Sandy", "UT", "84070", 40.547299,-111.879789));
     
  // @formatter:on

@@ -66,12 +66,12 @@ public class User implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private UserStatus        status;
-    
+
     /**
      * 5 star rating
      */
     @Column(name = "rating")
-    private Integer rating;
+    private Integer           rating;
 
     @JsonIgnoreProperties(value = {"user"})
     @OneToMany(mappedBy = "user")
@@ -102,10 +102,30 @@ public class User implements Serializable {
         if (dateOfBirth == null) {
             return 0;
         }
-        
+
         Period age = Period.between(dateOfBirth, LocalDate.now());
-        
+
         return age.getYears();
+    }
+
+    public String getFullName() {
+        if (this.firstName == null && this.lastName == null) {
+            return null;
+        }
+        StringBuilder fullName = new StringBuilder();
+        if (this.firstName != null) {
+            fullName.append(this.firstName);
+        }
+        if (this.lastName != null) {
+            if (fullName.toString().length() > 0) {
+                fullName.append(" ");
+                fullName.append(this.lastName);
+            } else {
+                fullName.append(this.lastName);
+            }
+
+        }
+        return fullName.toString();
     }
 
 }

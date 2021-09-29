@@ -123,7 +123,7 @@ class HowToUseNestedQueryTests {
         }
 
     }
-    
+
     @Test
     void searchWithNestedCardsQuery() {
 
@@ -141,7 +141,7 @@ class HowToUseNestedQueryTests {
         /**
          * fetch only a few fields
          */
-        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "cards.id","cards.cardNumber","cards.active"}, new String[]{""});
+        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "cards.id", "cards.cardNumber", "cards.active"}, new String[]{""});
 
         /**
          * Query with bool
@@ -366,42 +366,25 @@ class HowToUseNestedQueryTests {
         /**
          * fetch only a few fields
          */
-        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "description","cards.cardNumber","cards.swipes.merchantName", "dateOfBirth", "addresses.street", "addresses.city", "addresses.state", "addresses.zipcode"}, new String[]{""});
+        searchSourceBuilder.fetchSource(new String[]{"id", "firstName", "lastName", "description", "cards.cardNumber", "cards.swipes.merchantName", "dateOfBirth", "addresses.street", "addresses.city",
+                "addresses.state", "addresses.zipcode"}, new String[]{""});
 
         /**
          * Query
          */
-
-        /**
-         * Filter<br>
-         * match query is like contain in mysql<br>
-         * * means all fields<br>
-         * Isabell - firstName of a diff user <br>
-         * 3102060312 - phoneNumber of a diff user<br>
-         * biggest fear - description of a diff user<br>
-         */
-        
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
 
-        /**
-         * Lehi skate park: 40.414897, -111.881186<br>
-         * get locations/addresses close to skate park(from a radius).<br>
-         * The geo_distance filter can work with multiple locations / points per document. Once a single location /
-         * point matches the filter, the document will be included in the filter.
-         */
-        boolQuery.filter(QueryBuilders.nestedQuery("addresses", QueryBuilders.multiMatchQuery("Lehi", "*"), ScoreMode.None));
-        
-        boolQuery.filter(QueryBuilders.nestedQuery("cards.swipes", QueryBuilders.multiMatchQuery("Best Buy", "*"), ScoreMode.None));
-        
-        boolQuery.filter(QueryBuilders.multiMatchQuery("strongly dislikes sheep", "*"));
+        String searchStr = "4692768449";
+
+        boolQuery.should(QueryBuilders.multiMatchQuery(searchStr, "*"));
+
+        boolQuery.should(QueryBuilders.nestedQuery("addresses", QueryBuilders.multiMatchQuery(searchStr, "*"), ScoreMode.None));
+
+        boolQuery.should(QueryBuilders.nestedQuery("cards", QueryBuilders.multiMatchQuery(searchStr, "*"), ScoreMode.None));
+
+        boolQuery.should(QueryBuilders.nestedQuery("cards.swipes", QueryBuilders.multiMatchQuery(searchStr, "*"), ScoreMode.None));
 
         searchSourceBuilder.query(boolQuery);
-
-        /**
-         * query against swipe(nested object) merchantName but did not return anything which it should.<br>
-         * * does not work with nested fields
-         */
-        // searchSourceBuilder.query(QueryBuilders.multiMatchQuery("Best Buy", "*"));
 
         searchRequest.preference("multi-fields");
 
@@ -437,7 +420,7 @@ class HowToUseNestedQueryTests {
 
         while (it.hasNext()) {
             SearchHit searchHit = it.next();
-            //log.info("sourceAsString={}", searchHit.getSourceAsString());
+            // log.info("sourceAsString={}", searchHit.getSourceAsString());
             try {
 
                 User obj = ObjectUtils.getObjectMapper().readValue(searchHit.getSourceAsString(), new TypeReference<User>() {});
